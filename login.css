@@ -1,0 +1,169 @@
+/* Keio Style Login Overlay */
+#loginOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    display: flex;
+    background: #fff;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.4s ease, visibility 0.4s;
+}
+
+#loginOverlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Split Layout */
+.login-split-container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+}
+
+/* Left side: Brand Area (Keio Red) */
+.login-left {
+    flex: 1;
+    background-color: #dd0077;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.manga-logo-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.manga-logo {
+    font-family: 'Inter', 'Noto Sans JP', sans-serif;
+    font-weight: 900;
+    font-size: 7rem;
+    color: #fff;
+    text-transform: uppercase;
+    line-height: 1;
+    letter-spacing: -2px;
+    font-style: italic; /* Keio style italic */
+    /* Minimal but clean styling */
+    position: relative;
+}
+
+/* Right side: Form Area */
+.login-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 60px 80px;
+    background: #fff;
+    color: #000;
+    overflow-y: auto;
+}
+
+.login-form-wrapper {
+    max-width: 440px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.login-title-main {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 48px;
+    color: #000;
+}
+
+.form-guide-text {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: #333;
+}
+
+.input-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 32px;
+    align-items: center;
+}
+
+.login-input-modern {
+    flex: 1;
+    background: #f2f2f2;
+    border: none;
+    border-radius: 20px;
+    padding: 18px 24px;
+    font-size: 16px;
+    outline: none;
+    transition: background 0.2s;
+}
+
+.login-input-modern:focus {
+    background: #e8e8e8;
+}
+
+.login-submit-btn {
+    background: #dd0077; /* Keio Red */
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 28px;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.login-submit-btn:hover {
+    filter: brightness(0.9);
+}
+
+.login-submit-btn:active {
+    transform: scale(0.96);
+}
+
+/* Error Message */
+.login-error-modern {
+    color: #dd0077;
+    font-size: 14px;
+    margin-top: -24px;
+    margin-bottom: 24px;
+    font-weight: 700;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .login-right {
+        padding: 40px;
+    }
+}
+
+@media (max-width: 768px) {
+    .login-split-container {
+        flex-direction: column;
+    }
+    .login-left {
+        flex: 0 0 200px;
+    }
+    .manga-logo {
+        font-size: 4rem;
+    }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+}
+
+.shake {
+    animation: shake 0.3s ease-in-out;
+}
