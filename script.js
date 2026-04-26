@@ -329,7 +329,7 @@ function playQueue(ids, onComplete) {
     const next = () => {
         if (i < ids.length && isPlaying) {
             const track = String(ids[i]).padStart(3, '0');
-            player.src = `audio2/${track}.wav`;
+            player.src = `audio/${track}.wav`;
 
             // 再生開始前に最新設定を適用
             player.volume = settings.volume / 100;
