@@ -2880,3 +2880,249 @@ input:checked+.checkmark::after {
 }
 
 /* Unified padding, previous extra padding rule removed */
+/* --- Push-to-Unmute & Indicators --- */
+.ptu-btn.is-active {
+    background: rgba(255, 69, 58, 0.2) !important;
+    color: #ff453a !important;
+    border-color: rgba(255, 69, 58, 0.4) !important;
+    box-shadow: 0 0 15px rgba(255, 69, 58, 0.2);
+}
+
+.unmute-badge {
+    position: absolute;
+    top: 12px;
+    right: 80px;
+    background: rgba(255, 69, 58, 0.2);
+    color: #ff453a;
+    border: 1px solid rgba(255, 69, 58, 0.4);
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.1s ease;
+    backdrop-filter: blur(4px);
+    z-index: 10;
+}
+
+body.is-unmuted .unmute-badge {
+    opacity: 1;
+    animation: pulse-red 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse-red {
+    0% { opacity: 0.6; transform: scale(0.98); }
+    50% { opacity: 1; transform: scale(1.02); box-shadow: 0 0 15px rgba(255, 69, 58, 0.3); }
+    100% { opacity: 0.6; transform: scale(0.98); }
+}
+
+body.is-unmuted .lcd-monitor {
+    border-color: rgba(255, 69, 58, 0.5) !important;
+    box-shadow: inset 0 0 20px rgba(255, 69, 58, 0.1), 0 0 10px rgba(255, 69, 58, 0.2) !important;
+}
+
+.key-input-modern {
+    width: 48px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    color: #fff;
+    text-align: center;
+    font-family: var(--main-font);
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.key-input-modern:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.key-input-modern:focus {
+    outline: none;
+    background: rgba(0, 122, 255, 0.15);
+    border-color: #007AFF;
+    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2);
+}
+
+.settings-hint {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 10px;
+    padding: 0 4px;
+    line-height: 1.4;
+}
+
+/* --- PTU Visual States --- */
+.ptu-btn.muted {
+    color: #ff453a !important;
+}
+.ptu-btn.muted .mic-slash {
+    display: block !important;
+}
+.ptu-btn:not(.muted) .mic-slash {
+    display: none !important;
+}
+.ptu-btn.is-active {
+    background: rgba(0, 122, 255, 0.2) !important;
+    color: #64D2FF !important;
+    border-color: rgba(0, 122, 255, 0.4) !important;
+    box-shadow: 0 0 15px rgba(0, 122, 255, 0.2);
+}
+
+.settings-select-modern {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    color: #fff;
+    padding: 6px 12px;
+    font-family: var(--main-font);
+    font-size: 13px;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    max-width: 180px;
+}
+.settings-select-modern:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+.settings-select-modern option {
+    background: #2c2c2e;
+    color: #fff;
+}
+
+.settings-section-inner {
+    padding: 12px 16px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 12px;
+    margin: 8px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.mini-toggles {
+    margin-top: 8px;
+    border: none !important;
+    background: transparent !important;
+}
+.mini-toggles .settings-list-item {
+    padding: 6px 0;
+    border: none;
+}
+.list-item-label.mini {
+    font-size: 12px;
+    opacity: 0.8;
+}
+.custom-chk.small .checkmark {
+    width: 32px;
+    height: 18px;
+}
+.custom-chk.small .checkmark::after {
+    width: 14px;
+    height: 14px;
+    left: 2px;
+    top: 2px;
+}
+.custom-chk.small input:checked + .checkmark::after {
+    left: 16px;
+}
+.mic-vol-group {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+}
+
+.mic-toggles-group {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    margin: 0 !important;
+    border-radius: 10px !important;
+}
+.mic-toggles-group .settings-list-item {
+    padding: 10px 14px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+.mic-toggles-group .settings-list-item:last-child {
+    border-bottom: none !important;
+}
+.settings-section-inner {
+    background: rgba(255, 255, 255, 0.02) !important;
+    padding: 16px !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2) !important;
+}
+
+.custom-chk.small {
+    width: 32px;
+    height: 18px;
+}
+.custom-chk.small .checkmark {
+    width: 32px !important;
+    height: 18px !important;
+}
+.custom-chk.small .checkmark::after {
+    width: 14px !important;
+    height: 14px !important;
+    left: 2px !important;
+    top: 2px !important;
+}
+.custom-chk.small input:checked + .checkmark::after {
+    transform: translateX(14px) !important;
+}
+
+.mic-toggles-group .settings-list-item {
+    background: transparent !important;
+    padding: 10px 0 !important;
+    margin: 0 !important;
+}
+
+.settings-section-inner {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 14px !important;
+    padding: 20px !important;
+    margin: 12px 0 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+.mic-toggles-group {
+    background: transparent !important;
+    border: none !important;
+    margin-top: 15px !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+}
+.mic-toggles-group .settings-list-item {
+    padding: 8px 0 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+    background: transparent !important;
+}
+.mic-toggles-group .settings-list-item:last-child {
+    border-bottom: none !important;
+}
+.mic-vol-group {
+    margin-bottom: 5px !important;
+}
+
+.mic-toggles-group .list-item-label.mini {
+    font-size: 13px !important;
+    color: var(--text-main) !important;
+    opacity: 0.9 !important;
+    font-weight: 500 !important;
+}
+
+.list-item-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.settings-slider-group, .settings-list-group {
+    margin-bottom: 12px !important;
+}

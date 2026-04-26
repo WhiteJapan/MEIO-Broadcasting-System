@@ -73,6 +73,16 @@
                         <circle cx="12" cy="12" r="3.5"></circle>
                     </svg>
                 </button>
+                <button id="ptu-btn" class="btn-icon ptu-btn muted" title="プッシュ・トゥ・アンミュート (Mキー)">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                        <line x1="12" y1="19" x2="12" y2="23"></line>
+                        <line x1="8" y1="23" x2="16" y2="23"></line>
+                        <line class="mic-slash" x1="1" y1="1" x2="23" y2="23"></line>
+                    </svg>
+                </button>
                 <div id="clock" class="digital-clock">00:00:00</div>
             </div>
         </header>
@@ -122,6 +132,7 @@
                     <div class="builder-expand-content">
                         <div class="monitor-container">
                             <div class="lcd-monitor" id="builderDisplay">構成待ち...</div>
+                            <div id="unmute-indicator" class="unmute-badge">放送中</div>
                             <button class="btn-util-floating" id="clearBtn" title="全消去">Clear</button>
                         </div>
 
@@ -362,6 +373,113 @@
                                         class="styled-range">
                                 </div>
                             </div>
+                            <div class="settings-section">
+                                <h3 class="section-label">マイク放送 (PTT)</h3>
+
+                                <!-- 基本設定 -->
+                                <div class="settings-list-group">
+                                    <div class="settings-list-item">
+                                        <div class="list-item-info">
+                                            <span class="slider-icon">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                    stroke-linejoin="round">
+                                                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z">
+                                                    </path>
+                                                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                                                    <line x1="12" y1="19" x2="12" y2="23"></line>
+                                                    <line x1="8" y1="23" x2="16" y2="23"></line>
+                                                </svg>
+                                            </span>
+                                            <span class="list-item-label">機能を有効にする</span>
+                                        </div>
+                                        <label class="custom-chk">
+                                            <input type="checkbox" id="push-unmute-check">
+                                            <span class="checkmark stop-sw"></span>
+                                        </label>
+                                    </div>
+                                    <div class="settings-list-item">
+                                        <div class="list-item-info">
+                                            <span class="slider-icon">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                    stroke-linejoin="round">
+                                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                                </svg>
+                                            </span>
+                                            <span class="list-item-label">操作キー (長押し)</span>
+                                        </div>
+                                        <input type="text" id="unmute-key-input" class="key-input-modern" value="m"
+                                            maxlength="1" readonly>
+                                    </div>
+                                    <div class="settings-list-item">
+                                        <div class="list-item-info">
+                                            <span class="slider-icon">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                    stroke-linejoin="round">
+                                                    <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                                                    <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                                                    <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                                                    <line x1="6" y1="18" x2="6.01" y2="18"></line>
+                                                </svg>
+                                            </span>
+                                            <span class="list-item-label">使用するマイク</span>
+                                        </div>
+                                        <select id="mic-device-select" class="settings-select-modern">
+                                            <option value="">規定のデバイス</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- 感度調整 -->
+                                <div class="settings-slider-group">
+                                    <div class="slider-header">
+                                        <div class="slider-label-container">
+                                            <span class="slider-icon">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                    stroke-linejoin="round">
+                                                    <line x1="12" y1="20" x2="12" y2="10"></line>
+                                                    <line x1="18" y1="20" x2="18" y2="4"></line>
+                                                    <line x1="6" y1="20" x2="6" y2="16"></line>
+                                                </svg>
+                                            </span>
+                                            <span class="slider-label">マイク感度</span>
+                                        </div>
+                                        <span id="mic-volume-val" class="slider-value">100%</span>
+                                    </div>
+                                    <input type="range" id="mic-volume-range" min="0" max="200" value="100"
+                                        class="styled-range">
+                                </div>
+
+                                <!-- 詳細設定 -->
+                                <div class="settings-list-group">
+                                    <div class="settings-list-item">
+                                        <span class="list-item-label">エコー除去</span>
+                                        <label class="custom-chk">
+                                            <input type="checkbox" id="echo-cancel-check">
+                                            <span class="checkmark stop-sw"></span>
+                                        </label>
+                                    </div>
+                                    <div class="settings-list-item">
+                                        <span class="list-item-label">ノイズ抑制</span>
+                                        <label class="custom-chk">
+                                            <input type="checkbox" id="noise-suppress-check">
+                                            <span class="checkmark stop-sw"></span>
+                                        </label>
+                                    </div>
+                                    <div class="settings-list-item">
+                                        <span class="list-item-label">自動ゲイン制御</span>
+                                        <label class="custom-chk">
+                                            <input type="checkbox" id="auto-gain-check">
+                                            <span class="checkmark stop-sw"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <p class="settings-hint">※有効時は指定キーを押している間のみマイク入力が流れます。</p>
+                            </div>
                         </div>
 
                         <!-- History Settings -->
@@ -436,7 +554,7 @@
                                     </div>
                                     <div class="info-item">
                                         <span class="info-label">背景画像</span>
-                                        <span class="info-value">WhiteJPN</span>
+                                        <span class="info-value">kazikiomaguro_uc</span>
                                     </div>
                                 </div>
                             </div>
@@ -489,7 +607,8 @@
 
                         <p class="form-guide-text">パスワードを入力してください</p>
                         <div class="input-row">
-                            <input type="password" id="loginPass" class="login-input-modern" required autocomplete="current-password">
+                            <input type="password" id="loginPass" class="login-input-modern" required
+                                autocomplete="current-password">
                             <button type="submit" class="login-submit-btn">ログイン</button>
                         </div>
                         <div id="loginError" class="login-error-modern"></div>

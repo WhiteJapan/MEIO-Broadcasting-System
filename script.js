@@ -60,7 +60,14 @@ const DEFAULT_SETTINGS = {
     skipWarning: false,
     history: [],
     fullscreen: false,
-    reduceAnim: false
+    reduceAnim: false,
+    pushToUnmute: false,
+    unmuteKey: 'm',
+    micDeviceId: '',
+    micVolume: 100,
+    echoCancellation: true,
+    noiseSuppression: true,
+    autoGainControl: true
 };
 let settings = { ...DEFAULT_SETTINGS };
 
@@ -130,6 +137,36 @@ function applySettings() {
         document.body.classList.toggle('reduce-animations', settings.reduceAnim);
     }
 
+    // プッシュ・トゥ・アンミュート
+    const ptuCheck = document.getElementById('push-unmute-check');
+    if (ptuCheck) ptuCheck.checked = settings.pushToUnmute;
+    const ptuKeyInput = document.getElementById('unmute-key-input');
+    if (ptuKeyInput) {
+        ptuKeyInput.value = settings.unmuteKey;
+        ptuKeyInput.title = `現在のキー: ${settings.unmuteKey.toUpperCase()} (クリックして変更)`;
+    }
+    const ptuBtn = document.getElementById('ptu-btn');
+    if (ptuBtn) {
+        ptuBtn.classList.remove('is-active');
+        ptuBtn.classList.toggle('muted', settings.pushToUnmute);
+    }
+
+    // マイク詳細設定の同期
+    const micVolRange = document.getElementById('mic-volume-range');
+    const micVolVal = document.getElementById('mic-volume-val');
+    if (micVolRange) {
+        micVolRange.value = settings.micVolume;
+        updateSliderFill(micVolRange);
+    }
+    if (micVolVal) micVolVal.innerText = settings.micVolume + '%';
+
+    const echoCheck = document.getElementById('echo-cancel-check');
+    if (echoCheck) echoCheck.checked = settings.echoCancellation;
+    const noiseCheck = document.getElementById('noise-suppress-check');
+    if (noiseCheck) noiseCheck.checked = settings.noiseSuppression;
+    const agcCheck = document.getElementById('auto-gain-check');
+    if (agcCheck) agcCheck.checked = settings.autoGainControl;
+
     updateHistoryUI();
 }
 
@@ -138,7 +175,7 @@ function updateSliderFill(el) {
     const max = el.max || 100;
     const val = el.value;
     const percent = (val - min) / (max - min) * 100;
-    el.style.background = `linear-gradient(to right, var(--accent-secondary) 0%, var(--accent-secondary) ${percent}%, var(--slider-track) ${percent}%, var(--slider-track) 100%)`;
+    el.style.background = `linear-gradient(to right, var(--accent-primary) 0%, var(--accent-primary) ${percent}%, var(--slider-track) ${percent}%, var(--slider-track) 100%)`;
 }
 
 function updateHistoryUI() {
@@ -171,6 +208,87 @@ let hiDisplayOrder = 1; // 1: 昇順, -1: 降順
 let currentLineTab = "名桜線"; // 単一路線固定
 let isPlaying = false;
 const player = new Audio();
+
+// --- マイク入力 (PTT) ロジック ---
+let micStream = null;
+let micContext = null;
+let micGainNode = null;
+
+async function initMic() {
+    if (micContext) {
+        if (micContext.state === 'suspended') await micContext.resume();
+        return;
+    }
+    try {
+        const constraints = {
+            audio: {
+                deviceId: settings.micDeviceId ? { exact: settings.micDeviceId } : undefined,
+                echoCancellation: settings.echoCancellation,
+                noiseSuppression: settings.noiseSuppression,
+                autoGainControl: settings.autoGainControl
+            }
+        };
+        micStream = await navigator.mediaDevices.getUserMedia(constraints);
+        micContext = new (window.AudioContext || window.webkitAudioContext)();
+        const source = micContext.createMediaStreamSource(micStream);
+        micGainNode = micContext.createGain();
+        micGainNode.gain.value = 0; // 初期状態はミュート
+        source.connect(micGainNode);
+        micGainNode.connect(micContext.destination);
+        // デバイスリストを更新（ラベル取得のため）
+        updateMicDevices();
+    } catch (e) {
+        console.error("マイク取得エラー:", e);
+    }
+}
+
+async function updateMicDevices() {
+    try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const audioInputs = devices.filter(device => device.kind === 'audioinput');
+        const select = document.getElementById('mic-device-select');
+        if (!select) return;
+
+        select.innerHTML = '<option value="">規定のデバイス</option>';
+        audioInputs.forEach(device => {
+            const option = document.createElement('option');
+            option.value = device.deviceId;
+            option.text = device.label || `マイク ${select.length}`;
+            if (device.deviceId === settings.micDeviceId) option.selected = true;
+            select.appendChild(option);
+        });
+    } catch (e) {
+        console.error("デバイスリスト取得エラー:", e);
+    }
+}
+
+async function switchMic(deviceId) {
+    settings.micDeviceId = deviceId;
+    saveSettings();
+    
+    if (micStream) {
+        micStream.getTracks().forEach(track => track.stop());
+        micStream = null;
+    }
+    micContext = null; // initMicで再生成させる
+    
+    if (document.body.classList.contains('is-unmuted')) {
+        await initMic();
+        if (micGainNode) micGainNode.gain.value = settings.micVolume / 100;
+    }
+}
+
+async function restartMic() {
+    if (micStream) {
+        micStream.getTracks().forEach(track => track.stop());
+        micStream = null;
+        micContext = null;
+        if (document.body.classList.contains('is-unmuted')) {
+            await initMic();
+            if (micGainNode) micGainNode.gain.value = settings.micVolume / 100;
+        }
+    }
+}
 
 let completedStations = new Set();
 let currentStatus = {
@@ -211,7 +329,7 @@ function playQueue(ids, onComplete) {
     const next = () => {
         if (i < ids.length && isPlaying) {
             const track = String(ids[i]).padStart(3, '0');
-            player.src = `audio/${track}.wav`;
+            player.src = `audio2/${track}.wav`;
 
             // 再生開始前に最新設定を適用
             player.volume = settings.volume / 100;
@@ -234,6 +352,37 @@ function stopBroadcast() {
     isPlaying = false;
     player.pause();
     player.currentTime = 0;
+    document.body.classList.remove('is-unmuted');
+}
+
+async function setUnmute(active) {
+    const ptuBtn = document.getElementById('ptu-btn');
+    
+    // マイクの初期化（初回のみ）
+    if (active && settings.pushToUnmute && !micContext) {
+        await initMic();
+    }
+
+    if (!settings.pushToUnmute) {
+        if (micGainNode) micGainNode.gain.value = 0; // 常にマイクはオフ
+        document.body.classList.remove('is-unmuted');
+        if (ptuBtn) {
+            ptuBtn.classList.remove('muted', 'is-active');
+        }
+        return;
+    }
+
+    // マイクのゲインのみを切り替え（放送のplayer.mutedには触らない）
+    if (micGainNode) {
+        const targetVol = active ? (settings.micVolume / 100) : 0;
+        micGainNode.gain.setTargetAtTime(targetVol, micContext.currentTime, 0.05);
+    }
+    
+    document.body.classList.toggle('is-unmuted', active);
+    if (ptuBtn) {
+        ptuBtn.classList.toggle('is-active', active);
+        ptuBtn.classList.toggle('muted', !active);
+    }
 }
 
 // --- UI Factory ---
@@ -803,6 +952,98 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
     }
+
+    // --- PTU Logic & Event Listeners ---
+    const ptuBtnEl = document.getElementById('ptu-btn');
+    if (ptuBtnEl) {
+        const startUnmute = (e) => { e.preventDefault(); setUnmute(true); };
+        const endUnmute = () => setUnmute(false);
+
+        ptuBtnEl.addEventListener('mousedown', startUnmute);
+        ptuBtnEl.addEventListener('touchstart', startUnmute, { passive: false });
+        window.addEventListener('mouseup', endUnmute);
+        window.addEventListener('touchend', endUnmute);
+    }
+
+    // Key Listeners
+    window.addEventListener('keydown', (e) => {
+        if (e.repeat) return;
+        if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+        if (e.key.toLowerCase() === settings.unmuteKey.toLowerCase()) {
+            setUnmute(true);
+        }
+    });
+
+    window.addEventListener('keyup', (e) => {
+        if (e.key.toLowerCase() === settings.unmuteKey.toLowerCase()) {
+            setUnmute(false);
+        }
+    });
+
+    // PTU Settings Listeners
+    const ptuCheckEl = document.getElementById('push-unmute-check');
+    if (ptuCheckEl) {
+        ptuCheckEl.onchange = () => {
+            settings.pushToUnmute = ptuCheckEl.checked;
+            saveSettings();
+            applySettings();
+        };
+    }
+
+    const ptuKeyInputEl = document.getElementById('unmute-key-input');
+    if (ptuKeyInputEl) {
+        ptuKeyInputEl.onclick = () => {
+            ptuKeyInputEl.value = "";
+            ptuKeyInputEl.placeholder = "...";
+            const keyHandler = (e) => {
+                e.preventDefault();
+                settings.unmuteKey = e.key.toLowerCase();
+                saveSettings();
+                applySettings();
+                window.removeEventListener('keydown', keyHandler, true);
+            };
+            window.addEventListener('keydown', keyHandler, true);
+        };
+    }
+
+    const micSelect = document.getElementById('mic-device-select');
+    if (micSelect) {
+        micSelect.onchange = () => switchMic(micSelect.value);
+    }
+
+    // 初回のデバイスリスト取得試行
+    updateMicDevices();
+    // 権限許可後などのためにデバイス変更イベントを監視
+    navigator.mediaDevices.ondevicechange = updateMicDevices;
+
+    // マイク詳細設定のリスナー
+    const micVolRange = document.getElementById('mic-volume-range');
+    if (micVolRange) {
+        micVolRange.oninput = () => {
+            settings.micVolume = parseInt(micVolRange.value);
+            const valEl = document.getElementById('mic-volume-val');
+            if (valEl) valEl.innerText = settings.micVolume + '%';
+            updateSliderFill(micVolRange);
+            saveSettings();
+            if (micGainNode && document.body.classList.contains('is-unmuted')) {
+                micGainNode.gain.setTargetAtTime(settings.micVolume / 100, micContext.currentTime, 0.05);
+            }
+        };
+    }
+
+    const setupMicToggle = (id, key) => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.onchange = () => {
+                settings[key] = el.checked;
+                saveSettings();
+                restartMic();
+            };
+        }
+    };
+    setupMicToggle('echo-cancel-check', 'echoCancellation');
+    setupMicToggle('noise-suppress-check', 'noiseSuppression');
+    setupMicToggle('auto-gain-check', 'autoGainControl');
 
     // Clock
     setInterval(() => {
